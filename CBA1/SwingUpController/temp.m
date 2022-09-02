@@ -1,0 +1,1 @@
+theta_2_dot = -0.5722*k*theta_4_dot*cos(theta_4)*(0.0057*theta_4_dot^2 + 0.4182*cos(theta_4) - 0.4182);
