@@ -23,7 +23,7 @@ K1 = place(A,B, P);
 
 plant1 = feedback(orig_plant, K1); 
 
-P =  2 * [-1, -2, -3, -4];
+P =  1.25 * [-1, -2, -3, -4];
 K2 = place(A,B, P);
 plant2 = feedback(orig_plant, K2);
 
