@@ -23,7 +23,7 @@ K1 = place(A,B, P);
 
 plant1 = feedback(orig_plant, K1); 
 
-P =  1.25 * [-1, -2, -3, -4];
+P =  0.25* [-1, -2, -3, -4];
 K2 = place(A,B, P);
 plant2 = feedback(orig_plant, K2);
 
@@ -41,10 +41,10 @@ sys3 = feedback(orig_plant, K3);
 initial(sys3,[0,0,0.1,0])
 
 Q2 = [
-    0.1, 0, 0, 0; %Penalize theta_3 error
+    1, 0, 0, 0; %Penalize theta_3 error
     0, 0.1, 0, 0; %Penalize dTheta_3 error
-    0, 0, 0.1, 0; %Penalize theta_4 eror
-    0, 0, 0, 0.1]; %Penalize dtheta_4 error
-R2 = 1;
+    0, 0, 2, 0; %Penalize theta_4 eror
+    0, 0, 0, 3]; %Penalize dtheta_4 error
+R2 = 0.15; 
 
 [K4, S,e] = lqr(A,B,Q2,R2);
