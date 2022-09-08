@@ -1,6 +1,6 @@
 clc;
 clear all
-METR7203_PendulumPlant
+METR7203_PendulumPlant;
 % %% State Space Feedback
 m = 0.1580;
 lcg = 0.2698;
@@ -41,10 +41,19 @@ sys3 = feedback(orig_plant, K3);
 initial(sys3,[0,0,0.1,0])
 
 Q2 = [
-    1, 0, 0, 0; %Penalize theta_3 error
-    0, 0.1, 0, 0; %Penalize dTheta_3 error
-    0, 0, 2, 0; %Penalize theta_4 eror
-    0, 0, 0, 3]; %Penalize dtheta_4 error
-R2 = 0.15; 
-
+    70, 0, 0, 0; %Penalize theta_3 error 50
+    0, 80, 0, 0; %Penalize dTheta_3 error 60
+    0, 0, 100, 0; %Penalize theta_4 eror 100
+    0, 0, 0, 200]; %Penalize dtheta_4 error 200
+R2 = 1; 
+    
 [K4, S,e] = lqr(A,B,Q2,R2);
+
+%    -1.0000   -4.2958  -82.8913  -34.4222
+disp(K4)
+sys3 = feedback(orig_plant, K4);
+initial(sys3,[0,0,-0.2,0.00])
+
+%K4 =
+
+%    -4.4721   -8.8551 -105.9750  -27.1565
