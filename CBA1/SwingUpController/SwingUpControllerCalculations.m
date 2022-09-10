@@ -1,5 +1,6 @@
-syms p_ddot t theta_2 theta_3_dot theta_2_ddot theta_2_dot theta_4 theta_4_dot theta_4_ddot
+syms p_ddot t theta_2 theta_3_dot theta_2_ddot theta_2_dot theta_4 theta_4_dot theta_4_ddot T F
 
+% Run pendulum plan to init vars
 METR7203_PendulumPlant
 Omega = 400 * 2*pi/60; % RPM to 
 theta_1_dot = Omega;
@@ -21,22 +22,25 @@ theta_3_ddot_fullEq = 1/J_eq*(Omega*theta_2_dot*J_fw^2 + ...(
 
 % Control Law
 k = sym('k', 'positive');
+k1 = sym('k1', 'positive');
+k2 = sym('k2', 'positive');
 g = 9.81;
 l = lcg;
-E = m*g*l*(cos(theta_4) - 1) + 1/2*m*l^2*theta_4_dot.^2;
+E = m*g*l*(cos(theta_4) - 1) + 1/2*k2*m*l^2*theta_4_dot.^2;
 E_0 = 0;
-u = -k*(E-E_0).*theta_4_dot.*cos(theta_4);
+u = -k1*(E-E_0).*theta_4_dot.*cos(theta_4);
 sol = solve(theta_3_ddot == theta_3_ddot_largeOmega, theta_2_dot);
 theta_2_dot = subs(sol, p_ddot, u);
 
-% theta_2_dot now indicates the required speed fo rotation of the gimbal
+% theta_2_dot now indicates the required speed for rotation of the gimbal
 % need (fast) gimbal controller to turn Voltage input into speed output. 
 
 
-%% Nilp's masterful solving of dynamics eqs :)
+% Nilp's masterful solving of dynamics eqs :)
 % Solutions involving damping and pendulum reactions on pendulum base.
 
 theta_3_ddot = sym('theta_3_ddot', 'real');
+T = Rh*F
 eq1 = Jz_bar*theta_4_ddot + m*l*cos(theta_4)*theta_3_ddot + m*g*l*sin(theta_4) == T;
 theta_3_ddot_sol = solve(eq1, theta_3_ddot);
 
