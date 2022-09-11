@@ -13,7 +13,7 @@ theta_3_ddot = p_ddot/Rh;
 
 J_fw = sym("J_fw", 'positive'); % Equvalent to ID/KD in PendulumPlant
 T_fw = sym("T_fw", 'real');
-J_fw = ID;
+J_fw = JD;
 J_eq = J1;
 H = Omega * J_fw;
 theta_3_ddot_largeOmega = Omega*theta_2_dot*J_fw^2/J_eq;
