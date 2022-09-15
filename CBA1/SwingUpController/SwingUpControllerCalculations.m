@@ -41,7 +41,7 @@ theta_2_dot = subs(sol, p_ddot, u);
 
 theta_3_ddot = sym('theta_3_ddot', 'real');
 T = Rh*F
-eq1 = Jz_bar*theta_4_ddot + m*l*cos(theta_4)*theta_3_ddot + m*g*l*sin(theta_4) == T;
+eq1 = Jz_bar*theta_4_ddot + m*l*cos(theta_4)*theta_3_ddot + m*g*l*sin(theta_4) == 0;
 theta_3_ddot_sol = solve(eq1, theta_3_ddot);
 
 c3 = 0.0027;

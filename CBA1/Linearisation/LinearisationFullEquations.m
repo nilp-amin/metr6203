@@ -22,7 +22,7 @@ pend_syms = [m l g];
 pend_num = [m_num, lcg, 9.81]; 
 syms c_1 c_2 c_3 c_4
 damp_syms = [c_1 c_2 c_3 c_4];
-damp_num = [0.000187, 0.0118, 0.0027, 0.00001];
+damp_num = [0.000187, 0.00118, 0.0027, 0.000001];
 
 Jz_bar_num = Jz_bar;
 syms Jz_bar J_vert
@@ -51,8 +51,8 @@ x = [theta_1, theta_2,  theta_3, theta_4, theta_dot_1, theta_dot_2,  theta_dot_3
 % Four state
 % f = [theta_dot_3, theta_dot_4,  S.theta_ddot_3, S.theta_ddot_4];
 % x = [theta_3, theta_4, theta_dot_3, theta_dot_4];
-f = [theta_dot_2, theta_dot_4,  S.theta_ddot_2, S.theta_ddot_4];
-x = [theta_2, theta_4, theta_dot_2, theta_dot_4];
+f = [theta_dot_2,  S.theta_ddot_2,theta_dot_4,  S.theta_ddot_4];
+x = [theta_2, theta_dot_2, theta_4, theta_dot_4];
 
 u = [T_1, T_2];
 
@@ -99,6 +99,7 @@ if rank(obsv(A_up, C_up)) == length(x)
     disp("System is observable.")
 else
     disp("System is not observable")
+    eigv = eig(A_up);
     for i = 1:length(eigv)
         lambda = eigv(i);
         r = rank([lambda*eye(length(x)) - A_up; C_up]);
@@ -106,9 +107,8 @@ else
     end
 end
 
-die
 % Full Kinetic energy
-g = 9.81;
+
 L = 0.5*ID*theta_dot_2*(theta_dot_2 - sin(theta_3)*theta_dot_3) + ...
     0.5*JD * theta_dot_1*(theta_dot_1 + cos(theta_2)*0 + sin(theta_2)*1*theta_dot_3) + ...
     0.5*ID * sin(theta_2) * 0 * (sin(theta_2) * 0 - cos(theta_2)*1*theta_dot_3) + ...
@@ -116,12 +116,14 @@ L = 0.5*ID*theta_dot_2*(theta_dot_2 - sin(theta_3)*theta_dot_3) + ...
     0.5*JD*sin(theta_2)*1*theta_dot_3*(theta_dot_1 + cos(theta_2)*0 + sin(theta_2)*1*theta_dot_3) - ...
     0.5*ID*sin(theta_3)*theta_dot_3*(theta_dot_2 - sin(theta_3)*theta_dot_3) - ...
     0.5*ID*cos(theta_2)*1*theta_dot_3*(sin(theta_2)*0 - cos(theta_2)*cos(theta_3)*theta_dot_3) + ...
-    0.5*m_num*(theta_dot_2*Rh - lcg*theta_dot_4*cos(theta_4))^2 + 0.5*m_num*(lcg*sin(theta_4)*theta_dot_4)^2 - m_num*g*lcg*cos(theta_4); %(subtract last as potential energy term)
+    +0.5*m_num*(theta_dot_2 - lcg*theta_dot_4*cos(theta_4))^2 + 0.5*m_num*(lcg*sin(theta_4)*theta_dot_4)^2 - m_num*g*lcg*(cos(theta_4)-1); %(subtract last as potential energy term)
+
+L = 0.5*(J1+m_num*rh^2)*theta_dot_3^2 + 0.5*ID*theta_dot_1^2+0.5*IC*theta_dot_2^2+m_num*lcg*rh*theta_dot_3*theta_dot_4*cos(theta_4)-m_num*9.81*lcg*(cos(theta_4)-1)
 
 V = [theta_1, theta_2, theta_3, theta_4; ...
      theta_dot_1, theta_dot_2, theta_dot_3, theta_dot_4;...
      theta_ddot_1, theta_ddot_2, theta_ddot_3, theta_ddot_4];
- V = reshape(V, 1, 12);
+V = reshape(V, 1, 12);
 
 % Generalized forces 
 genfor = [T_1 - c_1*theta_dot_1, T_2 - c_2*theta_dot_2, - c_3*theta_dot_3, - c_4*theta_dot_4];
@@ -142,13 +144,32 @@ x = [theta_1, theta_2,  theta_3, theta_4, theta_dot_1, theta_dot_2,  theta_dot_3
 % x = [theta_2,  theta_3, theta_4, theta_dot_1, theta_dot_2, theta_dot_4];
 u = [T_1, T_2];
 
+f = [theta_dot_2, theta_dot_4,  S.theta_ddot_2, S.theta_ddot_4];
+x = [theta_2, theta_4, theta_dot_2, theta_dot_4];
+
 % Determine Jacobian
 JacxL = jacobian(f,x);
 JacuL = jacobian(f,u);
+% Substitute numeric values
+Omega = 400*2*pi/60;
+Jacx_num = subs(JacxL, J_syms, J_num); % Inertia properties
+Jacx_num = subs(Jacx_num, Jz_bar, Jz_bar_num); % Pendulum inertia
+Jacx_num = subs(Jacx_num, J_vert, J1); % Effetive inertia about the vertical
+Jacx_num = subs(Jacx_num, [m, l ,g], [m_num, lcg, 9.81]); % Pendulum stuff
+Jacx_num = subs(Jacx_num, damp_syms, damp_num); % Damping
+Jacx_num = subs(Jacx_num, theta_dot_1, Omega)
+
+Jacu_num = subs(JacuL, J_syms, J_num);
+Jacu_num = subs(Jacu_num, Jz_bar, Jz_bar_num);
+Jacu_num = subs(Jacu_num, J_vert, J1);
+Jacu_num = subs(Jacu_num, [m, l ,g], [m_num, lcg, 9.81]);
+Jacu_num = subs(Jacu_num, damp_syms, damp_num);
+Jacu_num = subs(Jacu_num, theta_dot_1, Omega)
+
 
 op_point = zeros(1, length(x));
-A_up = double(subs(JacxL, [x T_1 T_2], [op_point 0 0]));
-B_up = double(subs(JacxL, [x T_1 T_2], [op_point 0 0]));
+A_up = double(subs(Jacx_num, x,op_point));
+B_up = double(subs(Jacu_num, [x T_1 T_2], [op_point 0 0]));
 C_up = [eye(length(x)/2), zeros(length(x)/2)];
 
 if rank(ctrb(A_up, B_up)) == length(x)
